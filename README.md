@@ -99,11 +99,11 @@ Your project should now be running locally. Visit `http://localhost:8000` in you
 - **Endpoint:** `Put /api/timesheets/`
 - **Data Format:**
   ```json
-{
+    {
   "projects": [3, 4],
   "hours_worked": 10.0,
   "week_start_date": "2023-12-15"
-}
+    }
 
 ### and most important there also other apis to login through google as well (oauth2) but you need to replace the creds of your own.
 the apis are http://127.0.0.1:8000/api/auth/.... just need to code well..
