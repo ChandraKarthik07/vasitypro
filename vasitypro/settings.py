@@ -173,8 +173,8 @@ REST_FRAMEWORK = {
     
 
 }
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY="746589599140-aio6e52g7s6gj09tc4en8gbvouc1oonj.apps.googleusercontent.com"
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET="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"
+# SOCIAL_AUTH_GOOGLE_OAUTH2_KEY="746589599140-aio6e52g7s6gj09tc4en8gbvouc1oonj.apps.googleusercontent.com"
+# SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET="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"
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
