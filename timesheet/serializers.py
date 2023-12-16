@@ -68,3 +68,9 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
+from .models import Timesheet
+
+class TimesheetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Timesheet
+        fields = ['id', 'projects', 'hours_worked', 'week_start_date']

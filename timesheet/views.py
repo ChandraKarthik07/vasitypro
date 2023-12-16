@@ -26,6 +26,8 @@ from oauth2_provider.models import AccessToken
 from rest_framework import viewsets
 from .models import Project
 from .serializers import ProjectSerializer
+from .models import Timesheet
+from .serializers import TimesheetSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -84,11 +86,21 @@ class ProjectAPIView(APIView):
     # authentication_classes = [OAuth2Authentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        # Retrieve all projects without filtering based on the owner
-        projects = Project.objects.all()
-        serializer = ProjectSerializer(projects, many=True)
-        return Response(serializer.data)
+    def get(self, request, project_id=None):
+        if project_id is not None:
+            # Retrieve details of a specific project
+            project = self.get_object(project_id)
+            if project is None:
+                return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = ProjectSerializer(project)
+            return Response(serializer.data)
+        else:
+            # Retrieve all projects without filtering based on the owner
+            projects = Project.objects.all()
+            serializer = ProjectSerializer(projects, many=True)
+            return Response(serializer.data)
+
 
     def post(self, request):
         # Set the owner field to the user making the request
@@ -106,8 +118,8 @@ class ProjectAPIView(APIView):
         project = self.get_object(project_id)
         if project is None:
             return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ProjectSerializer(project, data=request.data)
+        request.data['owner'] = request.user.id
+        serializer = ProjectSerializer(project, data=request.data,partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -118,15 +130,60 @@ class ProjectAPIView(APIView):
         if project is None:
             return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        # Check if the authenticated user is the owner of the project
+        if project.owner != request.user:
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+
         project.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_object(self, project_id):
         try:
-            # Only filter based on owner if the request method is PUT or DELETE
             if self.request.method in ['PUT', 'DELETE']:
+                # Ensure the owner is the authenticated user
                 return Project.objects.get(id=project_id, owner=self.request.user)
             else:
                 return Project.objects.get(id=project_id)
         except Project.DoesNotExist:
+            return None
+        
+
+
+from .permissions import IsOwnerOrReadOnly  # Import the custom permission class
+
+class TimesheetAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+
+    def post(self, request):
+        request.data['owner'] = request.user.id
+
+        serializer = TimesheetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)  # Set the user to the authenticated user
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, timesheet_id):
+        timesheet = self.get_object(timesheet_id)
+        if timesheet is None:
+            return Response({'error': 'Timesheet not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Use partial=True when creating the serializer instance
+        serializer = TimesheetSerializer(timesheet, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        timesheets = Timesheet.objects.filter(user=request.user)
+        serializer = TimesheetSerializer(timesheets, many=True)
+        return Response(serializer.data)
+
+    def get_object(self, timesheet_id):
+        try:
+            timesheet = Timesheet.objects.get(id=timesheet_id)
+            self.check_object_permissions(self.request, timesheet)  # Check permissions
+            return timesheet
+        except Timesheet.DoesNotExist:
             return None

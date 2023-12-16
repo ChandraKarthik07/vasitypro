@@ -7,6 +7,9 @@ urlpatterns = [
     path('oauth2/convert-token/', CustomConvertTokenView.as_view(), name='convert_token'),
     path('projects/', ProjectAPIView.as_view(), name='project-crud'),
     path('projects/<int:project_id>/', ProjectAPIView.as_view(), name='project-crud'),
+    path('timesheets/', TimesheetAPIView.as_view(), name='timesheet-list'),
+    path('timesheets/<int:timesheet_id>/', TimesheetAPIView.as_view(), name='timesheet-detail'),
+
 
 ]
 

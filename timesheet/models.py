@@ -6,6 +6,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
 import uuid
+import datetime
 import pytz
 from django.utils.translation import gettext_lazy as _
 class CustomUserManager(UserManager):
@@ -47,3 +48,11 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Timesheet(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    projects = models.ManyToManyField(Project)  # Use ManyToManyField for multiple projects
+    hours_worked = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    week_start_date = models.DateField(blank=True, null=True)  
+    def __str__(self):
+        return f"{self.user.username}'s Timesheet for {self.project.name} starting {self.week_start_date}"
