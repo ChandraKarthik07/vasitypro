@@ -96,10 +96,9 @@ Your project should now be running locally. Visit `http://localhost:8000` in you
 #### Authorization: Bearer Token (Obtain after login)
 #### Response: Returns the created timesheet entry.
 #### Updating an existing timesheet entry
-#### Endpoint: PUT /api/timesheets/{timesheet_id}/
-Data Format:
-json
-Copy code
+- **Endpoint:** `Put /api/timesheets/`
+- **Data Format:**
+  ```json
 {
   "projects": [3, 4],
   "hours_worked": 10.0,
